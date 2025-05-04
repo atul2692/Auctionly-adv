@@ -18,5 +18,9 @@ COPY . .
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Run gunicorn
-CMD ["gunicorn", "auction_site.wsgi:application", "--bind", "0.0.0.0:8000"] 
+# Create a script to run migrations and start the app
+RUN echo '#!/bin/bash\npython manage.py migrate\ngunicorn auction_site.wsgi:application --bind 0.0.0.0:8000' > /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Run the startup script
+CMD ["/app/start.sh"] 
