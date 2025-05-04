@@ -1,0 +1,649 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ auction.title }} - Auctionly{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Auction Images -->
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <!-- Main Swiper Slider -->
+                        <div class="swiper auction-image-slider">
+                            <div class="swiper-wrapper">
+                                <!-- Main auction image -->
+                                <div class="swiper-slide">
+                                    {% if auction.image %}
+                                        <img src="{{ auction.image.url }}" alt="{{ auction.title }}" class="img-fluid rounded">
+                                    {% else %}
+                                        <img src="{% static 'images/product1.jpg' %}" alt="{{ auction.title }}" class="img-fluid rounded">
+                                    {% endif %}
+                                </div>
+                                <!-- Additional images -->
+                                {% for img in auction.images.all %}
+                                    <div class="swiper-slide">
+                                            <img src="{{ img.image.url }}" alt="{{ auction.title }}" class="img-fluid rounded">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Add navigation buttons -->
+                            <div class="swiper-button-prev"></div>
+                            <div class="swiper-button-next"></div>
+                            
+                            <!-- Add pagination dots -->
+                            <div class="swiper-pagination"></div>
+                        </div>
+                        
+                        <!-- Thumbnails Swiper -->
+                        {% if auction.image or auction.images.exists %}
+                            <div class="swiper auction-thumbs-slider mt-3">
+                                <div class="swiper-wrapper">
+                                    <!-- Main image thumbnail -->
+                                    <div class="swiper-slide">
+                                        {% if auction.image %}
+                                            <img src="{{ auction.image.url }}" alt="{{ auction.title }}" class="img-fluid rounded thumbnail">
+                                        {% else %}
+                                            <img src="{% static 'images/product1.jpg' %}" alt="{{ auction.title }}" class="img-fluid rounded thumbnail">
+                                        {% endif %}
+                                    </div>
+                                    <!-- Additional image thumbnails -->
+                                    {% for img in auction.images.all %}
+                                        <div class="swiper-slide">
+                                                <img src="{{ img.image.url }}" alt="{{ auction.title }}" class="img-fluid rounded thumbnail">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Auction Details -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="text-light mb-2">{{ auction.title }}</h2>
+                        <p class="text-muted mb-3">
+                            <span class="badge bg-primary me-2">{{ auction.category.name }}</span>
+                            <span class="me-3"><i class="fas fa-eye me-1"></i> {{ auction.views_count }} view{{ auction.views_count|pluralize }}</span>
+                            <span><i class="fas fa-gavel me-1"></i> {{ auction.bid_count }} bid{{ auction.bid_count|pluralize }}</span>
+                        </p>
+                        
+                        <div class="auction-price mb-4">
+                            <h3 class="text-primary mb-1">${{ auction.current_price }}</h3>
+                            <p class="text-muted small">Starting price: ${{ auction.starting_price }}</p>
+                        </div>
+                        
+                        <!-- Timer Card -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <div class="auction-timer">
+                                    <h6 class="text-light"><i class="fas fa-clock me-2"></i>Time Remaining</h6>
+                                <div class="timer-countdown" data-end="{{ auction.end_date|date:'Y-m-d H:i:s' }}">
+                                        <div class="row g-2 text-center">
+                                            <div class="col">
+                                                <div class="bg-gradient-primary rounded p-2 timer-box">
+                                                    <h3 class="mb-0 text-white" id="days">00</h3>
+                                                    <small class="text-light">Days</small>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="bg-gradient-primary rounded p-2 timer-box">
+                                                    <h3 class="mb-0 text-white" id="hours">00</h3>
+                                                    <small class="text-light">Hours</small>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="bg-gradient-primary rounded p-2 timer-box">
+                                                    <h3 class="mb-0 text-white" id="minutes">00</h3>
+                                                    <small class="text-light">Min</small>
+                                                </div>
+                                        </div>
+                                            <div class="col">
+                                                <div class="bg-gradient-primary rounded p-2 timer-box">
+                                                    <h3 class="mb-0 text-white seconds pulse-animation" id="seconds">00</h3>
+                                                    <small class="text-light">Sec</small>
+                                        </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="seller-info mb-4">
+                            <h6 class="text-light mb-2">Seller Information</h6>
+                            <a href="{% url 'accounts:seller_profile' seller_id=auction.seller.id %}" class="text-decoration-none">
+                                <div class="d-flex align-items-center">
+                                    {% if auction.seller.profile_picture %}
+                                        <img src="{{ auction.seller.profile_picture.url }}" alt="{{ auction.seller.username }}" class="rounded-circle me-2" width="40" height="40">
+                                    {% else %}
+                                        <div class="profile-placeholder rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                            <h6 class="text-white m-0">{{ auction.seller.username.0|upper }}</h6>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <p class="text-light mb-0">{{ auction.seller.username }}</p>
+                                        <p class="text-muted small mb-0">Seller since {{ auction.seller.date_joined|date:"M Y" }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="auction-actions">
+                            {% if user.is_authenticated and auction.status == 'ACTIVE' and not auction.is_ended %}
+                                {% if user != auction.seller %}
+                                    <!-- Bid Form -->
+                                    <form method="POST" action="{% url 'auctions:place_bid' auction.slug %}" class="mb-3" id="bidForm">
+                                        {% csrf_token %}
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            {{ bid_form.amount }}
+                                            <button type="submit" class="btn btn-primary">Place Bid</button>
+                                        </div>
+                                        <small class="form-text text-muted">Enter a bid higher than ${{ auction.current_price }}</small>
+                                    </form>
+                                    
+                                    <!-- Watchlist Button -->
+                                    <form method="POST" action="{% url 'auctions:toggle_watchlist' auction.slug %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-secondary">
+                                            {% if is_in_watchlist %}
+                                                <i class="fas fa-bookmark me-1"></i> Remove from Watchlist
+                                            {% else %}
+                                                <i class="far fa-bookmark me-1"></i> Add to Watchlist
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                    
+                                    {% if user.is_staff and user != auction.seller %}
+                                        <div class="mt-3">
+                                            <a href="{% url 'auctions:sync_blockchain' auction.id %}" class="btn btn-outline-warning">
+                                                <i class="fab fa-ethereum me-1"></i> Sync Blockchain (Admin)
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a href="{% url 'auctions:edit_auction' auction.slug %}" class="btn btn-outline-warning">
+                                            <i class="fas fa-edit me-1"></i> Edit Auction
+                                        </a>
+                                        <a href="{% url 'auctions:delete_auction' auction.slug %}" class="btn btn-outline-danger">
+                                            <i class="fas fa-trash-alt me-1"></i> Delete Auction
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            {% elif auction.is_ended %}
+                                <div class="alert {% if auction.winner %}alert-success{% else %}alert-info{% endif %} mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas {% if auction.winner %}fa-trophy{% else %}fa-info-circle{% endif %} me-2 fa-2x"></i>
+                                        <h4 class="mb-0">Auction Ended</h4>
+                                    </div>
+                                    
+                                    {% if auction.bids.exists %}
+                                        {% if auction.winner %}
+                                            <div class="mt-3 p-3 border rounded bg-dark auction-ended-info">
+                                                <h5 class="text-center mb-3 text-white">Winner: 
+                                                    <span class="text-success fw-bold">{{ auction.winner.username }}</span>
+                                                </h5>
+                                                <div class="d-flex justify-content-between text-white data-row">
+                                                    <span>Final Price:</span>
+                                                    <span class="text-primary fw-bold">${{ auction.current_price }}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between text-white data-row">
+                                                    <span>Total Bids:</span>
+                                                    <span>{{ auction.bid_count }}</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between text-white data-row">
+                                                    <span>End Date:</span>
+                                                    <span>{{ auction.end_date|date:"F d, Y H:i" }}</span>
+                                                </div>
+                                                
+                                                {% if user == auction.winner %}
+                                                    <div class="alert alert-success mt-3 mb-0">
+                                                        <i class="fas fa-check-circle me-2"></i>
+                                                        <strong>Congratulations!</strong> You won this auction.
+                                                        <p class="mb-0 mt-1">
+                                                            Please contact the seller at: <a href="mailto:{{ auction.seller.email }}">{{ auction.seller.email }}</a>
+                                                        </p>
+                                                        
+                                                        <!-- ETH Payment Button -->
+                                                        {% if auction.ethpayment and auction.ethpayment.is_paid %}
+                                                            <div class="mt-3 alert alert-success">
+                                                                <i class="fas fa-check-circle me-2"></i>Payment has been completed successfully.
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="mt-3">
+                                                                {% if auction.is_paid %}
+                                                                    <div class="alert alert-success">
+                                                                        <i class="fas fa-check-circle me-2"></i>Payment has been completed successfully.
+                                                                    </div>
+                                                                {% else %}
+                                                                    <div class="d-grid gap-2">
+                                                                        <a href="{% url 'auctions:auction_payment' auction.slug %}" class="btn btn-primary">
+                                                                            <i class="fab fa-ethereum me-2"></i>Pay with Ethereum
+                                                                        </a>
+                                                                        <a href="{% url 'auctions:razorpay_payment' auction.slug %}" class="btn btn-success">
+                                                                            <i class="fas fa-credit-card me-2"></i>Pay with Razorpay
+                                                                        </a>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% elif user == auction.seller %}
+                                                    <div class="alert alert-success mt-3 mb-0">
+                                                        <i class="fas fa-check-circle me-2"></i>
+                                                        <p class="mb-0">The winner has been notified by email about this auction.</p>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <p class="mb-0 mt-2 text-white">This auction ended with no winner.</p>
+                                        {% endif %}
+                                    {% else %}
+                                        <p class="mb-0 mt-2 text-white">This auction ended with no bids.</p>
+                                    {% endif %}
+                                </div>
+                            {% elif not user.is_authenticated %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-lock me-2"></i> Please <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="alert-link">login</a> to place a bid or add to watchlist.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bid History -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="text-light mb-3">Bid History</h5>
+                        {% if bids %}
+                            <div class="bid-history-container" style="max-height: 250px; overflow-y: auto;">
+                                <ul class="list-group list-group-flush">
+                                    {% for bid in bids %}
+                                        <li class="list-group-item bg-transparent border-bottom border-secondary py-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center">
+                                                    {% if bid.bidder.profile_picture %}
+                                                        <img src="{{ bid.bidder.profile_picture.url }}" alt="{{ bid.bidder.username }}" class="rounded-circle me-2" width="30" height="30">
+                                                    {% else %}
+                                                        <div class="profile-placeholder rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                                            <h6 class="text-white m-0">{{ bid.bidder.username.0|upper }}</h6>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <p class="text-light mb-0">{{ bid.bidder.username }}</p>
+                                                        <p class="text-muted small mb-0">{{ bid.created_at|date:"M d, Y H:i" }}</p>
+                                                    </div>
+                                                </div>
+                                                <span class="text-primary">${{ bid.amount }}</span>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% if auction.bid_count > 10 %}
+                                <div class="text-center mt-3">
+                                    <p class="text-muted small">Showing the latest 10 bids of {{ auction.bid_count }} total</p>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-gavel text-muted fa-2x mb-2"></i>
+                                <p class="text-muted mb-0">No bids yet. Be the first to bid!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Auction Description -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="text-light mb-3">Description</h5>
+                        <div class="text-muted">
+                            {{ auction.description|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Related Auctions -->
+        {% if related_auctions %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4 class="text-light mb-3">Related Auctions</h4>
+                    <div class="row">
+                        {% for related in related_auctions %}
+                            <div class="col-md-6 col-lg-3 mb-4">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="position-relative">
+                                        <img src="{{ related.image.url }}" alt="{{ related.title }}" class="card-img-top">
+                                        <div class="position-absolute bottom-0 start-0 p-3 w-100 bg-gradient-dark">
+                                            <span class="badge bg-primary">{{ related.category.name }}</span>
+                                            {% if related.is_ended %}
+                                                <span class="badge bg-danger">Ended</span>
+                                            {% else %}
+                                                <span class="badge bg-success">{{ related.time_remaining }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-1 text-truncate">
+                                            <a href="{{ related.get_absolute_url }}" class="text-light text-decoration-none">{{ related.title }}</a>
+                                        </h5>
+                                        <p class="text-primary mb-2">${{ related.current_price }}</p>
+                                        <p class="text-muted small mb-0">
+                                            <i class="fas fa-gavel me-1"></i> {{ related.bid_count }} bid{{ related.bid_count|pluralize }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Direct ethers.js loading from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
+
+<script>
+    // Initialize Swiper sliders
+    const thumbsSlider = new Swiper('.auction-thumbs-slider', {
+            spaceBetween: 10,
+        slidesPerView: 'auto',
+            freeMode: true,
+            watchSlidesProgress: true,
+    });
+
+    const mainSlider = new Swiper('.auction-image-slider', {
+            spaceBetween: 10,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            thumbs: {
+            swiper: thumbsSlider,
+        },
+    });
+
+    // Format time with leading zeros
+    function formatTime(time) {
+        return time < 10 ? `0${time}` : time;
+    }
+    
+    // Wait for DOM content to load
+    document.addEventListener('DOMContentLoaded', function() {
+        const endDate = new Date("{{ auction.end_date|date:'c' }}").getTime();
+        const auctionSlug = "{{ auction.slug }}";
+        const isEnded = {{ auction.is_ended|lower }};
+        
+        // Don't set up timer if auction is already ended
+        if (isEnded) {
+            return;
+        }
+        
+        // Update the countdown every second
+        const timerInterval = setInterval(function() {
+            // Get current date and calculate difference
+            const now = new Date().getTime();
+            const distance = endDate - now;
+            
+            // Handle negative distance (auction ended)
+            if (distance < 0) {
+                clearInterval(timerInterval);
+                
+                // Make sure elements exist before updating them
+                const daysEl = document.getElementById('days');
+                const hoursEl = document.getElementById('hours');
+                const minutesEl = document.getElementById('minutes');
+                const secondsEl = document.getElementById('seconds');
+                const timerCountdown = document.querySelector('.timer-countdown');
+                
+                if (timerCountdown) {
+                    timerCountdown.innerHTML = '<div class="alert alert-danger">This auction has ended</div>';
+                }
+                
+                // Hide bidding form if it exists
+                const bidForm = document.getElementById('bidForm');
+                if (bidForm) {
+                    bidForm.style.display = 'none';
+                }
+                
+                // Call our check-winner endpoint
+                checkAndSetWinner(auctionSlug);
+                
+                return;
+            }
+            
+            // Time calculations
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+            // Get elements and update if they exist
+            const daysEl = document.getElementById('days');
+            const hoursEl = document.getElementById('hours');
+            const minutesEl = document.getElementById('minutes');
+            const secondsEl = document.getElementById('seconds');
+            
+            // Only update if elements exist
+            if (daysEl) daysEl.textContent = formatTime(days);
+            if (hoursEl) hoursEl.textContent = formatTime(hours);
+            if (minutesEl) minutesEl.textContent = formatTime(minutes);
+            if (secondsEl) {
+                // Add animation class
+                secondsEl.classList.add('pulse-animation');
+                secondsEl.textContent = formatTime(seconds);
+                
+                // Remove the animation class after the animation completes
+                setTimeout(() => {
+                    if (secondsEl) {
+                    secondsEl.classList.remove('pulse-animation');
+                    }
+                }, 900);
+            }
+            
+            // Check more frequently as auction gets closer to ending
+            if (distance < 10000 && distance > 0) {
+                console.log("Auction ending soon, preparing to process...");
+            }
+            
+        }, 1000);
+        
+        // Function to check for winner and refresh page
+        function checkAndSetWinner(auctionSlug) {
+            console.log("Auction has ended, checking for winner...");
+            
+            // Add a notification
+            const container = document.querySelector('.container');
+            if (container) {
+                const noticeEl = document.createElement('div');
+                noticeEl.className = 'alert alert-warning mt-3';
+                noticeEl.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Auction has ended. Determining winner...';
+                container.insertBefore(noticeEl, container.firstChild);
+            }
+            
+            // Make an AJAX call to check/set winner
+            fetch(`/auctions/api/process-ended-auction/${auctionSlug}/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Winner determination response:", data);
+                
+                if (data.success) {
+                    console.log("Winner determined successfully:", data.winner);
+                    // Show success message before refreshing
+                    const container = document.querySelector('.container');
+                    if (container) {
+                        const successEl = document.createElement('div');
+                        successEl.className = 'alert alert-success mt-3';
+                        successEl.innerHTML = '<i class="fas fa-check-circle me-2"></i> Auction processed successfully! Refreshing page...';
+                        container.insertBefore(successEl, container.firstChild);
+                    }
+                    // Refresh the page to show updated auction status
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    console.error("Error determining winner:", data.message);
+                    // Show error and refresh anyway
+                    const container = document.querySelector('.container');
+                    if (container) {
+                        const errorEl = document.createElement('div');
+                        errorEl.className = 'alert alert-danger mt-3';
+                        errorEl.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> ${data.message}. Refreshing page...`;
+                        container.insertBefore(errorEl, container.firstChild);
+                    }
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error("Error checking winner:", error);
+                // Show error and refresh anyway
+                const container = document.querySelector('.container');
+                if (container) {
+                    const errorEl = document.createElement('div');
+                    errorEl.className = 'alert alert-danger mt-3';
+                    errorEl.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> Error processing auction. Refreshing page...';
+                    container.insertBefore(errorEl, container.firstChild);
+                }
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            });
+        }
+    });
+
+    // MetaMask Integration - Removed from bidding functionality
+    // Now only used for payment after winning an auction
+</script>
+
+<style>
+    @keyframes pulse-animation {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); color: white; }
+        100% { transform: scale(1); }
+    }
+    
+    .pulse-animation {
+        animation: pulse-animation 1s ease;
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #0f0;
+        box-shadow: 0 0 3px rgba(0, 255, 0, 0.5);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 0.5; }
+        50% { opacity: 1; }
+        100% { opacity: 0.5; }
+    }
+    
+    .real-time-status {
+        text-align: center;
+        margin-top: 10px;
+    }
+    
+    /* Additional styles for better visibility */
+    .timer-countdown .timer-box {
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .timer-countdown .timer-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .timer-countdown .timer-box h3 {
+        color: #ffffff;
+        font-weight: bold;
+        font-size: 1.8rem;
+    }
+    
+    .timer-countdown .timer-box small {
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    }
+    
+    .alert-success .text-success {
+        color: #2ecc71 !important;
+    }
+    
+    .alert-success .text-primary {
+        color: #3498db !important;
+    }
+    
+    /* Improve auction ended info visibility */
+    .auction-ended-info {
+        background-color: #2c3e50;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auction-ended-info h5 {
+        color: #ffffff;
+        font-weight: 600;
+    }
+    
+    .auction-ended-info .data-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .auction-ended-info .data-row:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %} 

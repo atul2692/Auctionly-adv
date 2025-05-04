@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Auctionly{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'auctions:categories' %}">Categories</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+                    </ol>
+                </nav>
+                <h2 class="fw-bold text-light mb-3">{{ category.name }}</h2>
+                {% if category.description %}
+                    <p class="text-muted">{{ category.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <p class="text-muted">{{ auctions.paginator.count }} auction{{ auctions.paginator.count|pluralize }} found in this category</p>
+            </div>
+            <div class="col-md-4 d-flex justify-content-md-end">
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Sort by
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="sortDropdown">
+                        <li><a class="dropdown-item" href="?sort=newest">Newest</a></li>
+                        <li><a class="dropdown-item" href="?sort=ending_soon">Ending Soon</a></li>
+                        <li><a class="dropdown-item" href="?sort=price_low">Price: Low to High</a></li>
+                        <li><a class="dropdown-item" href="?sort=price_high">Price: High to Low</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        {% if auctions %}
+            <div class="row">
+                {% for auction in auctions %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="position-relative">
+                                {% if auction.image %}
+                                    <img src="{{ auction.image.url }}" alt="{{ auction.title }}" class="card-img-top">
+                                {% else %}
+                                    <img src="{% static 'images/product1.jpg' %}" alt="{{ auction.title }}" class="card-img-top">
+                                {% endif %}
+                                <div class="position-absolute bottom-0 start-0 p-3 w-100 bg-gradient-dark">
+                                    <span class="badge bg-primary">{{ auction.category.name }}</span>
+                                    {% if auction.is_ended %}
+                                        <span class="badge bg-danger">Ended</span>
+                                    {% else %}
+                                        <span class="badge bg-success auction-timer" data-end="{{ auction.end_date|date:'Y-m-d H:i:s' }}">
+                                            <span class="countdown-text">{{ auction.time_remaining }}</span>
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title mb-1 text-truncate">
+                                    <a href="{{ auction.get_absolute_url }}" class="text-light text-decoration-none">{{ auction.title }}</a>
+                                </h5>
+                                <p class="text-primary mb-2">${{ auction.current_price }}</p>
+                                <p class="text-muted small mb-0">
+                                    <i class="fas fa-gavel me-1"></i> {{ auction.bid_count }} bid{{ auction.bid_count|pluralize }}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-eye me-1"></i> {{ auction.views_count }} view{{ auction.views_count|pluralize }}
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                                <div class="d-grid">
+                                    <a href="{{ auction.get_absolute_url }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if auctions.paginator.num_pages > 1 %}
+                <nav aria-label="Auction pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if auctions.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if sort %}sort={{ sort }}&{% endif %}page={{ auctions.previous_page_number }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for i in auctions.paginator.page_range %}
+                            {% if auctions.number == i %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ i }}</span>
+                                </li>
+                            {% elif i > auctions.number|add:'-3' and i < auctions.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if sort %}sort={{ sort }}&{% endif %}page={{ i }}">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if auctions.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if sort %}sort={{ sort }}&{% endif %}page={{ auctions.next_page_number }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info text-center py-5">
+                <i class="fas fa-search fa-3x mb-3"></i>
+                <h4>No auctions found in this category</h4>
+                <p class="mb-3">Check back later or browse other categories.</p>
+                <a href="{% url 'auctions:categories' %}" class="btn btn-primary">Browse Categories</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update all countdown timers
+        function updateCountdowns() {
+            const timeElements = document.querySelectorAll('.auction-timer[data-end]');
+            
+            timeElements.forEach(el => {
+                const endDate = new Date(el.getAttribute('data-end')).getTime();
+                const now = new Date().getTime();
+                const distance = endDate - now;
+                
+                const countdownText = el.querySelector('.countdown-text');
+                
+                if (distance <= 0) {
+                    // Auction has ended
+                    countdownText.textContent = 'Ended';
+                    el.classList.remove('bg-success');
+                    el.classList.add('bg-danger');
+                    return;
+                }
+                
+                // Calculate time units
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                // Format the countdown text
+                let timeText = '';
+                if (days > 0) {
+                    timeText = `${days}d ${hours}h ${minutes}m`;
+                } else if (hours > 0) {
+                    timeText = `${hours}h ${minutes}m ${seconds}s`;
+                } else {
+                    timeText = `${minutes}m ${seconds}s`;
+                }
+                
+                countdownText.textContent = timeText;
+            });
+        }
+        
+        // Update immediately on page load
+        updateCountdowns();
+        
+        // Update every second
+        setInterval(updateCountdowns, 1000);
+    });
+</script>
+{% endblock %} 

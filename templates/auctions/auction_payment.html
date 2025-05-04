@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pay for Auction: {{ auction.title }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h4 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Complete Your Payment</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="auction-summary mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">Auction Details</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <img src="{{ auction.image.url }}" alt="{{ auction.title }}" class="img-fluid rounded">
+                                </div>
+                                <div class="col-md-9">
+                                    <h5>{{ auction.title }}</h5>
+                                    <p class="text-muted mb-1">Auction ID: #{{ auction.id }}</p>
+                                    <p class="text-success mb-1"><strong>Winning Bid: ${{ auction.current_price }}</strong></p>
+                                    <p class="text-muted small mb-0">Seller: {{ auction.seller.username }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-details mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">Payment Details</h5>
+                            
+                            <div class="alert alert-info">
+                                <p class="mb-0"><i class="fas fa-info-circle me-2"></i> You're paying with Ethereum cryptocurrency for your winning bid. After payment is complete, confirmation emails will be sent to both you and the seller.</p>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p class="mb-1 fw-bold">Amount in USD:</p>
+                                    <h4 class="text-primary mb-0">${{ usd_amount }}</h4>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1 fw-bold">Amount in ETH:</p>
+                                    <h4 class="text-success mb-0">{{ eth_amount }} ETH</h4>
+                                    <p class="text-muted small mb-0">Current conversion rate: 1 ETH = $3,000 USD</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-methods mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">Complete Payment</h5>
+                            
+                            <div class="ethereum-payment">
+                                <div class="alert alert-primary mb-4">
+                                    <h6><i class="fab fa-ethereum me-2"></i>MetaMask Payment</h6>
+                                    <p class="mb-0">Click the button below to connect MetaMask and complete your payment.</p>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button id="metamaskButton" class="btn btn-warning btn-lg">
+                                        <i class="fab fa-ethereum me-2"></i> Pay with MetaMask
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-note">
+                            <div class="alert alert-warning">
+                                <h6 class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Important Information</h6>
+                                <ul class="mb-0">
+                                    <li>Make sure you have enough ETH in your wallet before starting the transaction.</li>
+                                    <li>The payment confirmation may take a few minutes.</li>
+                                    <li>Once payment is processed, confirmation emails will be sent to both you and the seller.</li>
+                                    <li>If you encounter any issues, please contact support.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light text-center py-3">
+                        <a href="{{ auction.get_absolute_url }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Auction
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Function to copy text to clipboard
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    document.execCommand('copy');
+    
+    // Show a temporary tooltip
+    const button = element.nextElementSibling;
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    
+    setTimeout(() => {
+        button.innerHTML = originalHtml;
+    }, 2000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle MetaMask payment
+    const metamaskButton = document.getElementById('metamaskButton');
+    metamaskButton.addEventListener('click', async function() {
+        // Check if MetaMask is installed
+        if (typeof window.ethereum === 'undefined') {
+            alert('MetaMask is not installed. Please install MetaMask to continue.');
+            return;
+        }
+        
+        try {
+            // Request account access
+            const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+            const account = accounts[0];
+            
+            // Show loading state
+            metamaskButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+            metamaskButton.disabled = true;
+            
+            // Convert ETH amount to wei
+            const ethAmount = '{{ eth_amount }}';
+            const weiAmount = ethers.utils.parseEther(ethAmount);
+            
+            // Create transaction parameters
+            const transactionParameters = {
+                to: '0x1234567890123456789012345678901234567890', // Contract address
+                from: account,
+                value: weiAmount._hex, // Convert to hex string
+                gas: '0x5208', // 21000 gas
+            };
+            
+            // Send transaction
+            const txHash = await ethereum.request({
+                method: 'eth_sendTransaction',
+                params: [transactionParameters],
+            });
+            
+            // Submit the form to verify payment
+            verifyPayment(txHash, account);
+        } catch (error) {
+            console.error(error);
+            alert(`Error: ${error.message || error}`);
+            metamaskButton.innerHTML = '<i class="fab fa-ethereum me-2"></i> Pay with MetaMask';
+            metamaskButton.disabled = false;
+        }
+    });
+    
+    // Function to verify payment with the server
+    function verifyPayment(txHash, ethAddress) {
+        // Create form data
+        const formData = new FormData();
+        formData.append('tx_hash', txHash);
+        formData.append('buyer_address', ethAddress);
+        formData.append('eth_amount_wei', '{{ eth_amount_wei }}');
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        
+        // Send the verification to the server
+        fetch('{% url "auctions:process_eth_payment" auction.slug %}', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Payment successful! Confirmation emails have been sent to both you and the seller.');
+                window.location.href = data.redirect_url;
+            } else {
+                alert(`Error: ${data.message}`);
+                // Reset button
+                const metamaskButton = document.getElementById('metamaskButton');
+                metamaskButton.innerHTML = '<i class="fab fa-ethereum me-2"></i> Pay with MetaMask';
+                metamaskButton.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing your payment. Please try again.');
+            // Reset button
+            const metamaskButton = document.getElementById('metamaskButton');
+            metamaskButton.innerHTML = '<i class="fab fa-ethereum me-2"></i> Pay with MetaMask';
+            metamaskButton.disabled = false;
+        });
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Received Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #27ae60 0%, #2c3e50 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px 6px 0 0;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .payment-details {
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .transaction {
+            background-color: #eafaf1;
+            border-left: 4px solid #27ae60;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        .success-icon {
+            text-align: center;
+            font-size: 48px;
+            color: #27ae60;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #27ae60 0%, #2c3e50 100%);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .details-row:last-child {
+            border-bottom: none;
+        }
+        .buyer-info {
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Payment Received</h1>
+        </div>
+        <div class="content">
+            <div class="success-icon">💰</div>
+            
+            <h2>Payment Received for Your Auction!</h2>
+            
+            <p>Dear {{ auction.seller.username }},</p>
+            
+            <p>Great news! We're pleased to inform you that payment has been received for your auction <strong>{{ auction.title }}</strong>.</p>
+            
+            <div class="payment-details">
+                <h3>Payment Details:</h3>
+                <div class="details-row">
+                    <span>Item:</span>
+                    <span>{{ auction.title }}</span>
+                </div>
+                <div class="details-row">
+                    <span>Amount Received:</span>
+                    <span class="price">${{ auction.current_price }}</span>
+                </div>
+                <div class="details-row">
+                    <span>Payment Date:</span>
+                    <span>{{ payment_date }}</span>
+                </div>
+                <div class="details-row">
+                    <span>Platform Fee:</span>
+                    <span>${{ platform_fee }}</span>
+                </div>
+                <div class="details-row">
+                    <span>Net Amount:</span>
+                    <span class="price">${{ net_amount }}</span>
+                </div>
+            </div>
+            
+            <div class="buyer-info">
+                <h3>Buyer Information:</h3>
+                <div class="details-row">
+                    <span>Buyer:</span>
+                    <span>{{ auction.winner.username }}</span>
+                </div>
+                <div class="details-row">
+                    <span>Email:</span>
+                    <span>{{ auction.winner.email }}</span>
+                </div>
+            </div>
+            
+            <div class="transaction">
+                <h4>Transaction Information:</h4>
+                <div class="details-row">
+                    <span>Transaction Hash:</span>
+                    <span style="word-break: break-all;">{{ tx_hash }}</span>
+                </div>
+            </div>
+            
+            <p>Please contact the buyer to arrange delivery of the item. You can also view all transaction details on your account dashboard.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ auction_url }}" class="button">View Auction Details</a>
+            </div>
+            
+            <p>Thank you for using our auction platform!</p>
+        </div>
+        <div class="footer">
+            <p>If you have any questions, please contact our support team.</p>
+            <p>&copy; {% now "Y" %} Auctionly. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html> 

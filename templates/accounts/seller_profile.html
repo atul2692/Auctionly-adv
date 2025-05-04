@@ -1,0 +1,490 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ seller.username }}'s Profile - Auctionly{% endblock %}
+
+{% block extra_css %}
+<style>
+    .seller-profile-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #5470d6 100%);
+        border-radius: 15px;
+        padding: 40px 30px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(84, 112, 214, 0.2);
+    }
+    
+    .seller-profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+        transform: translate(30%, -30%);
+    }
+    
+    .seller-avatar {
+        width: 120px;
+        height: 120px;
+        position: relative;
+    }
+    
+    .seller-avatar img, 
+    .seller-avatar .profile-placeholder {
+        width: 120px;
+        height: 120px;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 12px 15px;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 10px;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .stat-card .value {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: white;
+    }
+    
+    .section-title-bar {
+        position: relative;
+        margin-bottom: 25px;
+        padding-left: 15px;
+    }
+    
+    .section-title-bar::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: var(--primary-color);
+        border-radius: 2px;
+    }
+    
+    .auction-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid var(--border-color);
+    }
+    
+    .auction-card:hover {
+        transform: translateY(-7px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auction-card .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .auction-status {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 10;
+    }
+    
+    .auction-category {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        z-index: 10;
+    }
+    
+    .badge-outline-primary {
+        color: white;
+        background-color: #6E8EFF;
+        border: none;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    .badge-outline-success {
+        color: white;
+        background-color: #2bd899;
+        border: none;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    .badge-outline-danger {
+        color: white;
+        background-color: #ff5f57;
+        border: none;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    .badge-outline-warning {
+        color: #1a1f2b;
+        background-color: #f6c23e;
+        border: none;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+    }
+    
+    .empty-state {
+        padding: 50px 20px;
+        text-align: center;
+        border-radius: 15px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+    }
+    
+    .empty-state .icon {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        opacity: 0.7;
+    }
+    
+    .auction-card .price {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .auction-card .meta {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+    
+    .auction-img-wrapper {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .auction-img-wrapper::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 50%;
+        background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+        z-index: 1;
+    }
+    
+    .auction-price-tag {
+        position: absolute;
+        bottom: 15px;
+        left: 15px;
+        z-index: 2;
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    
+    .nav-tabs {
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 30px;
+    }
+    
+    .nav-tabs .nav-link {
+        color: var(--text-muted);
+        background-color: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        color: var(--text-light);
+        border-color: transparent;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: var(--primary-color);
+        background-color: transparent;
+        border-color: var(--primary-color);
+    }
+    
+    @media (max-width: 992px) {
+        .seller-profile-header {
+            text-align: center;
+        }
+        
+        .seller-avatar {
+            margin: 0 auto 20px;
+        }
+        
+        .seller-stats {
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .seller-profile-header {
+            padding: 30px 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <!-- Seller Profile Header -->
+        <div class="seller-profile-header">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center">
+                        <div class="seller-avatar mb-3 mb-md-0">
+                            {% if seller.profile_picture %}
+                                <img src="{{ seller.profile_picture.url }}" alt="{{ seller.username }}" class="rounded-circle">
+                            {% else %}
+                                <div class="profile-placeholder rounded-circle d-flex align-items-center justify-content-center">
+                                    <h1 class="text-white m-0">{{ seller.username.0|upper }}</h1>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="ms-md-4 mt-3 mt-md-0">
+                            <div class="d-flex align-items-center mb-2">
+                                <h2 class="text-white mb-0">{{ seller.username }}</h2>
+                                <span class="badge badge-outline-primary rounded-pill ms-3 px-3 py-2">
+                                    <i class="fas fa-store me-1"></i> Seller
+                                </span>
+                            </div>
+                            <p class="text-white-50 mb-3">Seller since {{ seller.date_joined|date:"F Y" }}</p>
+                            
+                            <div class="d-flex flex-wrap seller-stats gap-3">
+                                <div class="stat-card">
+                                    <div class="small text-white-50 mb-1">Total Auctions</div>
+                                    <div class="value">{{ total_auctions }}</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="small text-white-50 mb-1">Successful Sales</div>
+                                    <div class="value">{{ successful_auctions }}</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="small text-white-50 mb-1">Success Rate</div>
+                                    <div class="value">{{ success_rate|floatformat:1 }}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mt-4 mt-lg-0 text-center text-lg-end">
+                    <a href="{{ request.META.HTTP_REFERER|default:'/' }}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-1"></i> Go Back
+                    </a>
+                    <a href="/auctions/" class="btn btn-primary ms-2">
+                        <i class="fas fa-search me-1"></i> Browse Auctions
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Auction Tabs -->
+        <ul class="nav nav-tabs" id="sellerAuctionTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="active-auctions-tab" data-bs-toggle="tab" data-bs-target="#active-auctions" type="button" role="tab" aria-controls="active-auctions" aria-selected="true">
+                    <i class="fas fa-gavel me-2"></i>Active Auctions
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="ended-auctions-tab" data-bs-toggle="tab" data-bs-target="#ended-auctions" type="button" role="tab" aria-controls="ended-auctions" aria-selected="false">
+                    <i class="fas fa-history me-2"></i>Ended Auctions
+                </button>
+            </li>
+        </ul>
+        
+        <!-- Tab Content -->
+        <div class="tab-content" id="sellerAuctionTabContent">
+            <!-- Active Auctions Tab -->
+            <div class="tab-pane fade show active" id="active-auctions" role="tabpanel" aria-labelledby="active-auctions-tab">
+                {% if active_auctions %}
+                    <div class="row">
+                        {% for auction in active_auctions %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="auction-card h-100">
+                                    <div class="auction-img-wrapper">
+                                        <img src="{{ auction.image.url }}" alt="{{ auction.title }}" class="card-img-top">
+                                        
+                                        <span class="auction-category">
+                                            <span class="badge badge-outline-primary px-3 py-2 rounded-pill">
+                                                {{ auction.category.name }}
+                                            </span>
+                                        </span>
+                                        
+                                        <span class="auction-status">
+                                            {% if auction.is_ended %}
+                                                <span class="badge badge-outline-danger px-3 py-2 rounded-pill">
+                                                    <i class="fas fa-clock me-1"></i> Ended
+                                                </span>
+                                            {% else %}
+                                                <span class="badge badge-outline-success px-3 py-2 rounded-pill countdown-badge" id="timer-{{ auction.id }}" data-end="{{ auction.end_date|date:'Y-m-d H:i:s' }}">
+                                                    <i class="fas fa-clock me-1"></i> {{ auction.time_remaining }}
+                                                </span>
+                                            {% endif %}
+                                        </span>
+                                        
+                                        <div class="auction-price-tag">
+                                            ${{ auction.current_price }}
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="mb-3 text-truncate">
+                                            <a href="{{ auction.get_absolute_url }}" class="text-light text-decoration-none">{{ auction.title }}</a>
+                                        </h5>
+                                        <div class="meta mb-3">
+                                            <span><i class="fas fa-gavel me-1"></i> {{ auction.bid_count }} bid{{ auction.bid_count|pluralize }}</span>
+                                            <span><i class="fas fa-eye me-1"></i> {{ auction.views_count }} view{{ auction.views_count|pluralize }}</span>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="{{ auction.get_absolute_url }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-external-link-alt me-1"></i> View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <h4 class="text-light mb-3">No Active Auctions</h4>
+                        <p class="text-muted mb-4">This seller doesn't have any active auctions at the moment.</p>
+                        <a href="/auctions/" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i> Browse All Auctions
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Ended Auctions Tab -->
+            <div class="tab-pane fade" id="ended-auctions" role="tabpanel" aria-labelledby="ended-auctions-tab">
+                {% if ended_auctions %}
+                    <div class="row">
+                        {% for auction in ended_auctions %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="auction-card h-100">
+                                    <div class="auction-img-wrapper">
+                                        <img src="{{ auction.image.url }}" alt="{{ auction.title }}" class="card-img-top">
+                                        
+                                        <span class="auction-category">
+                                            <span class="badge badge-outline-primary px-3 py-2 rounded-pill">
+                                                {{ auction.category.name }}
+                                            </span>
+                                        </span>
+                                        
+                                        <span class="auction-status">
+                                            <span class="badge badge-outline-danger px-3 py-2 rounded-pill">
+                                                <i class="fas fa-clock me-1"></i> Ended
+                                            </span>
+                                        </span>
+                                        
+                                        <div class="auction-price-tag">
+                                            ${{ auction.current_price }}
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="mb-3 text-truncate">
+                                            <a href="{{ auction.get_absolute_url }}" class="text-light text-decoration-none">{{ auction.title }}</a>
+                                        </h5>
+                                        <div class="meta mb-3">
+                                            {% if auction.winner %}
+                                                <span class="text-success"><i class="fas fa-trophy me-1"></i> Sold</span>
+                                            {% else %}
+                                                <span class="text-muted"><i class="fas fa-times-circle me-1"></i> No winner</span>
+                                            {% endif %}
+                                            <span><i class="fas fa-eye me-1"></i> {{ auction.views_count }} view{{ auction.views_count|pluralize }}</span>
+                                        </div>
+                                        <div class="d-grid">
+                                            <a href="{{ auction.get_absolute_url }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-external-link-alt me-1"></i> View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <h4 class="text-light mb-3">No Ended Auctions</h4>
+                        <p class="text-muted mb-4">This seller doesn't have any ended auctions yet.</p>
+                        <a href="/auctions/" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i> Browse All Auctions
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Countdown timers for auctions
+        document.querySelectorAll('.countdown-badge').forEach(badge => {
+            const endDate = new Date(badge.getAttribute('data-end')).getTime();
+            
+            const updateTimer = function() {
+                const now = new Date().getTime();
+                const distance = endDate - now;
+                
+                if (distance < 0) {
+                    badge.innerHTML = '<i class="fas fa-clock me-1"></i> Ended';
+                    badge.classList.remove('badge-outline-success');
+                    badge.classList.add('badge-outline-danger');
+                    clearInterval(timerInterval);
+                    return;
+                }
+                
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                let displayStr = '<i class="fas fa-clock me-1"></i> ';
+                if (days > 0) {
+                    displayStr += `${days}d ${hours}h`;
+                } else if (hours > 0) {
+                    displayStr += `${hours}h ${minutes}m`;
+                } else {
+                    displayStr += `${minutes}m ${seconds}s`;
+                }
+                
+                badge.innerHTML = displayStr;
+            };
+            
+            updateTimer();
+            const timerInterval = setInterval(updateTimer, 1000);
+        });
+    });
+</script>
+{% endblock %} 

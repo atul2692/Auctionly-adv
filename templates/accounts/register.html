@@ -1,0 +1,348 @@
+{% extends 'accounts/auth_base.html' %}
+{% load static %}
+
+{% block title %}Register - Auctionly{% endblock %}
+
+{% block auth_content %}
+<div class="row">
+    <div class="col-lg-5 d-none d-lg-block pe-0">
+        <div class="h-100 position-relative">
+            <img src="{% static 'images/register-bg.jpg' %}" alt="Register" class="img-fluid h-100 w-100 object-fit-cover rounded-start">
+            <div class="position-absolute top-0 left-0 w-100 h-100 bg-gradient-overlay rounded-start d-flex flex-column justify-content-center text-center p-5">
+                <h2 class="display-6 fw-bold text-white mb-3">Join Auctionly</h2>
+                <p class="lead text-white-50 mb-4">Create an account to bid on unique items, track auctions, and discover amazing deals.</p>
+                <div class="d-flex justify-content-center gap-3 mb-4">
+                    <span class="badge rounded-pill bg-light text-dark px-3 py-2">
+                        <i class="fas fa-gavel me-2"></i> Bid on Items
+                    </span>
+                    <span class="badge rounded-pill bg-light text-dark px-3 py-2">
+                        <i class="fas fa-tag me-2"></i> Sell Items
+                    </span>
+                </div>
+                <div class="mt-auto">
+                    <p class="text-white-50">Already have an account?</p>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-light btn-lg px-4">Login Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7 ps-lg-0">
+        <div class="register-content p-4 p-md-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-light mb-2">Create an Account</h2>
+                <p class="text-muted">Join our community of bidders and sellers</p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="{{ form.username.id_for_label }}" class="form-label text-light mb-2">
+                            <i class="fas fa-user text-primary me-2"></i>Username
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-dark text-primary">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}" placeholder="Choose a username" class="form-control bg-dark text-light border-dark" required>
+                        </div>
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-2">
+                                {% for error in form.username.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <label for="{{ form.email.id_for_label }}" class="form-label text-light mb-2">
+                            <i class="fas fa-envelope text-primary me-2"></i>Email Address
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-dark text-primary">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" placeholder="Enter your email" class="form-control bg-dark text-light border-dark" required>
+                        </div>
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-2">
+                                {% for error in form.email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label text-light mb-2">
+                        <i class="fas fa-user-tag text-primary me-2"></i>Account Type
+                    </label>
+                    <div class="account-type-selector">
+                        <div class="row g-2">
+                            {% for radio in form.user_type %}
+                                <div class="col-6">
+                                    <div class="account-type-option">
+                                        <input type="radio" name="{{ form.user_type.name }}" id="{{ radio.id_for_label }}" value="{{ radio.data.value }}" class="account-type-input" {% if forloop.first %}checked{% endif %}>
+                                        <label for="{{ radio.id_for_label }}" class="account-type-label card border-0 shadow-sm p-3 text-center h-100">
+                                            <div class="icon-container text-primary mb-2">
+                                                {% if radio.choice_label == 'Buyer' %}
+                                                    <i class="fas fa-shopping-cart fa-2x"></i>
+                                                {% else %}
+                                                    <i class="fas fa-store fa-2x"></i>
+                                                {% endif %}
+                                            </div>
+                                            <h6 class="mb-1 text-light">{{ radio.choice_label }}</h6>
+                                            <p class="text-muted small mb-0">
+                                                {% if radio.choice_label == 'Buyer' %}
+                                                    Bid on unique items
+                                                {% else %}
+                                                    List items for auction
+                                                {% endif %}
+                                            </p>
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if form.user_type.errors %}
+                        <div class="text-danger small mt-2">
+                            {% for error in form.user_type.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <label for="{{ form.password1.id_for_label }}" class="form-label text-light mb-2">
+                        <i class="fas fa-lock text-primary me-2"></i>Password
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-dark text-primary">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" name="{{ form.password1.name }}" id="{{ form.password1.id_for_label }}" placeholder="Create a password" class="form-control bg-dark text-light border-dark" required>
+                    </div>
+                    <div class="password-strength mt-3">
+                        <p class="text-muted small mb-2">Password requirements:</p>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-3">
+                                <div class="requirement p-2 rounded" id="uppercase">
+                                    <i class="fas fa-check-circle me-1 requirement-icon"></i> Uppercase
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="requirement p-2 rounded" id="number">
+                                    <i class="fas fa-check-circle me-1 requirement-icon"></i> Number
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="requirement p-2 rounded" id="special">
+                                    <i class="fas fa-check-circle me-1 requirement-icon"></i> Special
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="requirement p-2 rounded" id="length">
+                                    <i class="fas fa-check-circle me-1 requirement-icon"></i> Min 8 chars
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if form.password1.errors %}
+                        <div class="text-danger small mt-2">
+                            {% for error in form.password1.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <label for="{{ form.password2.id_for_label }}" class="form-label text-light mb-2">
+                        <i class="fas fa-lock text-primary me-2"></i>Confirm Password
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-dark text-primary">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" name="{{ form.password2.name }}" id="{{ form.password2.id_for_label }}" placeholder="Confirm your password" class="form-control bg-dark text-light border-dark" required>
+                    </div>
+                    {% if form.password2.errors %}
+                        <div class="text-danger small mt-2">
+                            {% for error in form.password2.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" value="" id="agreeTerms" required>
+                    <label class="form-check-label text-muted" for="agreeTerms">
+                        I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a>
+                    </label>
+                </div>
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger mb-4">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg py-3">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-4 d-lg-none">
+                <p class="text-muted mb-0">Already have an account? <a href="{% url 'accounts:login' %}" class="text-primary">Login</a></p>
+            </div>
+            
+            <div class="mt-4 pt-3 text-center">
+                <p class="text-muted mb-3">Or sign up with</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="#" class="btn btn-outline-light px-4">
+                        <i class="fab fa-google me-2"></i>Google
+                    </a>
+                    <a href="#" class="btn btn-outline-light px-4">
+                        <i class="fab fa-facebook-f me-2"></i>Facebook
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bg-gradient-overlay {
+        background: linear-gradient(135deg, rgba(13, 17, 23, 0.8) 0%, rgba(35, 41, 70, 0.9) 100%);
+    }
+    
+    .object-fit-cover {
+        object-fit: cover;
+    }
+    
+    .form-control, .input-group-text {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .form-control {
+        background-color: #1e2430 !important;
+        border-color: #2a3342 !important;
+        color: #e1e7ef !important;
+    }
+    
+    .form-control:focus {
+        background-color: #1e2430;
+        border-color: #3a5bff;
+        box-shadow: 0 0 0 0.25rem rgba(58, 91, 255, 0.25);
+    }
+    
+    .account-type-input {
+        position: absolute;
+        opacity: 0;
+    }
+    
+    .account-type-label {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: #1a202c;
+        border: 1px solid #2a3342 !important;
+    }
+    
+    .account-type-input:checked + .account-type-label {
+        border-color: #3a5bff !important;
+        background-color: rgba(58, 91, 255, 0.1);
+        box-shadow: 0 0 0 2px rgba(58, 91, 255, 0.5);
+    }
+    
+    .requirement {
+        background-color: #1a202c;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .requirement.valid {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+    }
+    
+    .requirement-icon {
+        opacity: 0.5;
+    }
+    
+    .requirement.valid .requirement-icon {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password validation script
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('{{ form.password1.id_for_label }}');
+        const uppercaseEl = document.getElementById('uppercase');
+        const numberEl = document.getElementById('number');
+        const specialEl = document.getElementById('special');
+        const lengthEl = document.getElementById('length');
+        
+        const checkPassword = function() {
+            const password = passwordInput.value;
+            
+            // Check uppercase
+            if (/[A-Z]/.test(password)) {
+                uppercaseEl.classList.add('valid');
+            } else {
+                uppercaseEl.classList.remove('valid');
+            }
+            
+            // Check number
+            if (/[0-9]/.test(password)) {
+                numberEl.classList.add('valid');
+            } else {
+                numberEl.classList.remove('valid');
+            }
+            
+            // Check special character
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+                specialEl.classList.add('valid');
+            } else {
+                specialEl.classList.remove('valid');
+            }
+            
+            // Check length
+            if (password.length >= 8) {
+                lengthEl.classList.add('valid');
+            } else {
+                lengthEl.classList.remove('valid');
+            }
+        };
+        
+        // Add event listener to password input
+        if (passwordInput) {
+            passwordInput.addEventListener('keyup', checkPassword);
+        }
+    });
+</script>
+{% endblock %} 

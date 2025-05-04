@@ -1,0 +1,21 @@
+{
+  "name": "auction-eth",
+  "version": "1.0.0",
+  "description": "Ethereum smart contracts for AuctionHub",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:sepolia": "hardhat run scripts/deploy-sepolia.js --network sepolia",
+    "test": "hardhat test",
+    "local-node": "hardhat node"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "chai": "^4.3.7",
+    "ethers": "^6.9.0",
+    "hardhat": "^2.23.0"
+  },
+  "devDependencies": {
+  }
+} 

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Watchlist - Auctionly{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="fw-bold text-light mb-3">Your Watchlist</h2>
+                <p class="text-muted">Auctions you're keeping an eye on.</p>
+            </div>
+        </div>
+        
+        {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
+        {% if watched_items %}
+            <div class="row">
+                {% for item in watched_items %}
+                    {% with auction=item.auction %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="position-relative">
+                                    <img src="{{ auction.image.url }}" alt="{{ auction.title }}" class="card-img-top">
+                                    <div class="position-absolute top-0 end-0 p-2">
+                                        <form method="POST" action="{% url 'auctions:toggle_watchlist' auction.slug %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Remove from Watchlist">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div class="position-absolute bottom-0 start-0 p-3 w-100 bg-gradient-dark">
+                                        <span class="badge bg-primary">{{ auction.category.name }}</span>
+                                        {% if auction.is_ended %}
+                                            <span class="badge bg-danger">Ended</span>
+                                        {% else %}
+                                            <span class="badge bg-success">{{ auction.time_remaining }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title mb-1 text-truncate">
+                                        <a href="{{ auction.get_absolute_url }}" class="text-light text-decoration-none">{{ auction.title }}</a>
+                                    </h5>
+                                    <p class="text-primary mb-2">${{ auction.current_price }}</p>
+                                    <p class="text-muted small mb-0">
+                                        <i class="fas fa-gavel me-1"></i> {{ auction.bid_count }} bid{{ auction.bid_count|pluralize }}
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-eye me-1"></i> {{ auction.views_count }} view{{ auction.views_count|pluralize }}
+                                    </p>
+                                </div>
+                                <div class="card-footer bg-transparent border-0 pt-0">
+                                    <div class="d-grid">
+                                        <a href="{{ auction.get_absolute_url }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center py-5">
+                <i class="far fa-bookmark fa-3x mb-3"></i>
+                <h4>Your watchlist is empty</h4>
+                <p class="mb-3">You haven't added any auctions to your watchlist yet.</p>
+                <a href="{% url 'auctions:auction_list' %}" class="btn btn-primary">Browse Auctions</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %} 

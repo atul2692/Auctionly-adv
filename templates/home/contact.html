@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us - Auctionly{% endblock %}
+
+{% block content %}
+<!-- Contact Hero Section -->
+<section class="contact-hero py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 mx-auto text-center" data-aos="fade-up">
+                <h1 class="display-5 fw-bold text-light mb-4">Contact Us</h1>
+                <p class="lead text-muted mb-0">Have questions or feedback? We'd love to hear from you.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Information -->
+<section class="contact-info py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <div class="text-primary mb-3">
+                        <i class="fas fa-map-marker-alt fa-3x"></i>
+                    </div>
+                    <h5 class="card-title text-light">Our Location</h5>
+                    <p class="card-text text-muted">123 Auction Street, New York, NY 10001, United States</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <div class="text-primary mb-3">
+                        <i class="fas fa-envelope fa-3x"></i>
+                    </div>
+                    <h5 class="card-title text-light">Email Us</h5>
+                    <p class="card-text text-muted">info@auctionly.com</p>
+                    <p class="card-text text-muted">support@auctionly.com</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <div class="text-primary mb-3">
+                        <i class="fas fa-phone-alt fa-3x"></i>
+                    </div>
+                    <h5 class="card-title text-light">Call Us</h5>
+                    <p class="card-text text-muted">+1 (555) 123-4567</p>
+                    <p class="card-text text-muted">Mon-Fri: 9am to 5pm EST</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form -->
+<section class="contact-form py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto" data-aos="fade-up">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4 p-md-5">
+                        <h3 class="fw-bold mb-4 text-light text-center">Send Us a Message</h3>
+                        
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <form method="POST" class="contact-form">
+                            {% csrf_token %}
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control bg-dark text-light border-dark" id="name" name="name" placeholder="Your Name" required>
+                                        <label for="name" class="text-muted">Your Name</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input type="email" class="form-control bg-dark text-light border-dark" id="email" name="email" placeholder="Your Email" required>
+                                        <label for="email" class="text-muted">Your Email</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control bg-dark text-light border-dark" id="subject" name="subject" placeholder="Subject" required>
+                                        <label for="subject" class="text-muted">Subject</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        <textarea class="form-control bg-dark text-light border-dark" id="message" name="message" placeholder="Your Message" style="height: 150px" required></textarea>
+                                        <label for="message" class="text-muted">Your Message</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary py-3">Send Message</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

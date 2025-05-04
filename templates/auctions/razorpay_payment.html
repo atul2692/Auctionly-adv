@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pay for Auction: {{ auction.title }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h4 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Complete Your Payment</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="auction-summary mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">Auction Details</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <img src="{{ auction.image.url }}" alt="{{ auction.title }}" class="img-fluid rounded">
+                                </div>
+                                <div class="col-md-9">
+                                    <h5>{{ auction.title }}</h5>
+                                    <p class="text-muted mb-1">Auction ID: #{{ auction.id }}</p>
+                                    <p class="text-success mb-1"><strong>Winning Bid: ${{ auction.current_price }}</strong></p>
+                                    <p class="text-muted small mb-0">Seller: {{ auction.seller.username }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-details mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">Payment Details</h5>
+                            
+                            <div class="alert alert-info">
+                                <p class="mb-0"><i class="fas fa-info-circle me-2"></i> Complete your payment securely using Razorpay. After payment is complete, confirmation emails will be sent to both you and the seller.</p>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p class="mb-1 fw-bold">Amount:</p>
+                                    <h4 class="text-primary mb-0">${{ payment.amount }}</h4>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1 fw-bold">Order ID:</p>
+                                    <p class="text-muted mb-0">{{ payment.order_id }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-methods mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">Complete Payment</h5>
+                            
+                            <div class="razorpay-payment">
+                                <div class="alert alert-primary mb-4">
+                                    <h6><i class="fas fa-credit-card me-2"></i>Razorpay Secure Payment</h6>
+                                    <p class="mb-0">Click the button below to complete your payment securely via Razorpay.</p>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button id="razorpayButton" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-credit-card me-2"></i> Pay Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-note">
+                            <div class="alert alert-warning">
+                                <h6 class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Important Information</h6>
+                                <ul class="mb-0">
+                                    <li>Your payment information is securely processed by Razorpay.</li>
+                                    <li>You will be redirected to a secure payment page.</li>
+                                    <li>Once payment is processed, confirmation emails will be sent to both you and the seller.</li>
+                                    <li>If you encounter any issues, please contact support.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light text-center py-3">
+                        <a href="{{ auction.get_absolute_url }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Auction
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Razorpay payment handler
+    const razorpayButton = document.getElementById('razorpayButton');
+    
+    razorpayButton.addEventListener('click', function() {
+        // Show loading state
+        razorpayButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+        razorpayButton.disabled = true;
+        
+        // Razorpay payment options
+        const options = {
+            key: "{{ razorpay_key_id }}",
+            amount: "{{ razorpay_amount }}",
+            currency: "INR",
+            name: "Auctionly",
+            description: "Payment for {{ auction.title }}",
+            image: "{% static 'images/logo.png' %}",
+            order_id: "{{ payment.order_id }}",
+            handler: function(response) {
+                // On successful payment
+                verifyPayment(response);
+            },
+            prefill: {
+                name: "{{ prefill.name }}",
+                email: "{{ prefill.email }}",
+                contact: "{{ prefill.contact }}"
+            },
+            notes: {
+                auction_id: "{{ auction.id }}",
+                title: "{{ auction.title }}"
+            },
+            theme: {
+                color: "#3399cc"
+            },
+            modal: {
+                ondismiss: function() {
+                    // Reset button when modal is closed
+                    razorpayButton.innerHTML = '<i class="fas fa-credit-card me-2"></i> Pay Now';
+                    razorpayButton.disabled = false;
+                }
+            }
+        };
+        
+        // Initialize Razorpay
+        const rzp = new Razorpay(options);
+        rzp.open();
+    });
+    
+    // Function to verify payment with the server
+    function verifyPayment(response) {
+        // Send the verification to the server
+        fetch('{% url "auctions:razorpay_callback" auction.slug %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.href = data.redirect_url;
+            } else {
+                alert(`Error: ${data.message}`);
+                // Reset button
+                const razorpayButton = document.getElementById('razorpayButton');
+                razorpayButton.innerHTML = '<i class="fas fa-credit-card me-2"></i> Pay Now';
+                razorpayButton.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing your payment. Please try again.');
+            // Reset button
+            const razorpayButton = document.getElementById('razorpayButton');
+            razorpayButton.innerHTML = '<i class="fas fa-credit-card me-2"></i> Pay Now';
+            razorpayButton.disabled = false;
+        });
+    }
+});
+</script>
+{% endblock %} 

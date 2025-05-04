@@ -1,0 +1,571 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your Profile - Auctionly{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #5470d6 100%);
+        border-radius: 15px;
+        padding: 40px 30px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(84, 112, 214, 0.2);
+    }
+    
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+        transform: translate(30%, -30%);
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .profile-avatar img, 
+    .profile-avatar .profile-placeholder {
+        width: 120px;
+        height: 120px;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .avatar-edit-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: var(--card-bg);
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .avatar-edit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .profile-stats-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid var(--border-color);
+    }
+    
+    .profile-stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .profile-stats-card .icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+    
+    .profile-stats-card .membership-icon {
+        background: linear-gradient(135deg, #6E8EFF 0%, #5470d6 100%);
+    }
+    
+    .profile-stats-card .login-icon {
+        background: linear-gradient(135deg, #2bd899 0%, #1ea97c 100%);
+    }
+    
+    .profile-stats-card .contact-icon {
+        background: linear-gradient(135deg, #f6c23e 0%, #e6a800 100%);
+    }
+    
+    .profile-form-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+    
+    .form-floating > .form-control {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+        background-color: var(--light-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-light);
+    }
+    
+    .form-floating > label {
+        padding: 1rem 0.75rem;
+        color: var(--text-muted);
+    }
+    
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: var(--primary-color);
+        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    }
+    
+    .form-floating > .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(110, 142, 255, 0.25);
+    }
+    
+    .input-group-text {
+        background-color: var(--light-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+    }
+    
+    .file-upload-wrapper {
+        position: relative;
+        overflow: hidden;
+        border-radius: 5px;
+    }
+    
+    .file-upload-wrapper input[type=file] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        min-width: 100%;
+        min-height: 100%;
+        font-size: 100px;
+        text-align: right;
+        filter: alpha(opacity=0);
+        opacity: 0;
+        outline: none;
+        cursor: pointer;
+        display: block;
+    }
+    
+    .section-title-bar {
+        position: relative;
+        margin-bottom: 25px;
+        padding-left: 15px;
+    }
+    
+    .section-title-bar::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: var(--primary-color);
+        border-radius: 2px;
+    }
+    
+    .nav-tabs {
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .nav-tabs .nav-link {
+        color: var(--text-muted);
+        background-color: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        color: var(--text-light);
+        border-color: transparent;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: var(--primary-color);
+        background-color: transparent;
+        border-color: var(--primary-color);
+    }
+    
+    /* Badge styling */
+    .badge-outline-primary {
+        color: white;
+        background-color: #6E8EFF;
+        border: none;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    .badge-outline-success {
+        color: white;
+        background-color: #2bd899;
+        border: none;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    .badge-outline-info {
+        color: white;
+        background-color: #36CFFF;
+        border: none;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    @media (max-width: 992px) {
+        .profile-header {
+            text-align: center;
+        }
+        
+        .profile-avatar {
+            margin: 0 auto 20px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .profile-header {
+            padding: 30px 20px;
+        }
+    }
+    
+    /* Add this to your existing styles */
+    .direct-link {
+        cursor: pointer !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="profile-section py-5">
+    <div class="container">
+        {% if messages %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <div class="d-flex align-items-center">
+                                {% if message.tags == 'success' %}
+                                    <i class="fas fa-check-circle fa-lg me-2"></i>
+                                {% elif message.tags == 'error' %}
+                                    <i class="fas fa-exclamation-circle fa-lg me-2"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="fas fa-exclamation-triangle fa-lg me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle fa-lg me-2"></i>
+                                {% endif %}
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Profile Header Card -->
+        <div class="profile-header">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center">
+                        <div class="profile-avatar">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle">
+                            {% else %}
+                                <div class="profile-placeholder rounded-circle d-flex align-items-center justify-content-center">
+                                    <h1 class="text-white m-0">{{ user.username.0|upper }}</h1>
+                                </div>
+                            {% endif %}
+                            <div class="avatar-edit-btn" data-bs-toggle="tooltip" title="Change profile picture" id="profilePictureBtn">
+                                <i class="fas fa-camera text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="ms-md-4 mt-3 mt-md-0">
+                            <h2 class="text-white mb-1">{{ user.username }}</h2>
+                            <p class="text-white-50 mb-3">{{ user.email }}</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge badge-outline-primary px-3 py-2 rounded-pill">
+                                    <i class="fas fa-user me-1"></i> {{ user.get_user_type_display }}
+                                </span>
+                                {% if user.is_seller %}
+                                    <span class="badge badge-outline-success px-3 py-2 rounded-pill">
+                                        <i class="fas fa-store me-1"></i> Seller
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-outline-info px-3 py-2 rounded-pill">
+                                        <i class="fas fa-shopping-cart me-1"></i> Customer
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mt-4 mt-lg-0 text-center text-lg-end">
+                    <a href="{% url 'auctions:auction_list' %}" class="btn btn-light me-2">
+                        <i class="fas fa-search me-1"></i> Browse Auctions
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Stats Row -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="profile-stats-card p-4">
+                    <div class="icon membership-icon">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <h5 class="text-light">Member Since</h5>
+                    <p class="text-primary fw-bold mb-0">{{ user.date_joined|date:"M d, Y" }}</p>
+                    <p class="text-muted small mb-0">Account age: {{ user.date_joined|timesince }}</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="profile-stats-card p-4">
+                    <div class="icon login-icon">
+                        <i class="fas fa-sign-in-alt text-white"></i>
+                    </div>
+                    <h5 class="text-light">Last Login</h5>
+                    <p class="text-primary fw-bold mb-0">{{ user.last_login|date:"M d, Y" }}</p>
+                    <p class="text-muted small mb-0">{{ user.last_login|timesince }} ago</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="profile-stats-card p-4">
+                    <div class="icon contact-icon">
+                        <i class="fas fa-address-card text-white"></i>
+                    </div>
+                    <h5 class="text-light">Contact Info</h5>
+                    <p class="text-primary fw-bold mb-0">
+                        {% if user.phone_number %}
+                            {{ user.phone_number }}
+                        {% else %}
+                            <span class="text-muted">No phone number</span>
+                        {% endif %}
+                    </p>
+                    <p class="text-muted small mb-0">
+                        {% if user.address %}
+                            {{ user.address|truncatechars:25 }}
+                        {% else %}
+                            No address information
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Content Tabs -->
+        <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="edit-profile-tab" data-bs-toggle="tab" data-bs-target="#edit-profile" type="button" role="tab" aria-controls="edit-profile" aria-selected="true">
+                    <i class="fas fa-user-edit me-2"></i>Edit Profile
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab" aria-controls="activity" aria-selected="false">
+                    <i class="fas fa-chart-line me-2"></i>Activity
+                </button>
+            </li>
+            {% if user.is_seller %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="seller-stats-tab" data-bs-toggle="tab" data-bs-target="#seller-stats" type="button" role="tab" aria-controls="seller-stats" aria-selected="false">
+                    <i class="fas fa-store me-2"></i>Seller Stats
+                </button>
+            </li>
+            {% endif %}
+        </ul>
+        
+        <!-- Tab Content -->
+        <div class="tab-content" id="profileTabContent">
+            <!-- Edit Profile Tab -->
+            <div class="tab-pane fade show active" id="edit-profile" role="tabpanel" aria-labelledby="edit-profile-tab">
+                <div class="profile-form-card">
+                    <div class="card-body p-4">
+                        <div class="section-title-bar">
+                            <h4 class="text-light mb-0">Update Your Profile</h4>
+                        </div>
+                        
+                        <form method="POST" enctype="multipart/form-data" id="profileForm">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label class="form-label text-light mb-2">Profile Picture</label>
+                                <div class="file-upload-wrapper">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-image"></i>
+                                        </span>
+                                        <input type="text" class="form-control file-upload-info" disabled placeholder="Upload Profile Picture" id="file-upload-info">
+                                        <label class="btn btn-primary" for="{{ form.profile_picture.id_for_label }}">
+                                            <i class="fas fa-upload me-1"></i> Browse
+                                        </label>
+                                        {{ form.profile_picture }}
+                                    </div>
+                                </div>
+                                {% if form.profile_picture.errors %}
+                                    <div class="text-danger small mt-2">
+                                        {% for error in form.profile_picture.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i> {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Recommended: Square image, minimum 200x200 pixels</small>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-phone"></i>
+                                        </span>
+                                        {{ form.phone_number }}
+                                    </div>
+                                </div>
+                                {% if form.phone_number.errors %}
+                                    <div class="text-danger small mt-2">
+                                        {% for error in form.phone_number.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i> {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </span>
+                                        {{ form.address }}
+                                    </div>
+                                </div>
+                                {% if form.address.errors %}
+                                    <div class="text-danger small mt-2">
+                                        {% for error in form.address.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i> {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary py-2">
+                                    <i class="fas fa-save me-2"></i> Update Profile
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Activity Tab -->
+            <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity-tab">
+                <div class="profile-form-card">
+                    <div class="card-body p-4">
+                        <div class="section-title-bar">
+                            <h4 class="text-light mb-3">Recent Activity</h4>
+                        </div>
+                        
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="btn-group" role="group">
+                                <a href="/auctions/watchlist/" class="btn btn-outline-primary">
+                                    <i class="fas fa-bookmark me-2"></i> My Watchlist
+                                </a>
+                                {% if not user.is_seller %}
+                                <a href="/auctions/my-bids/" class="btn btn-outline-primary">
+                                    <i class="fas fa-gavel me-2"></i> My Bids
+                                </a>
+                                {% endif %}
+                                {% if user.is_seller %}
+                                <a href="/auctions/my-auctions/" class="btn btn-outline-primary">
+                                    <i class="fas fa-list me-2"></i> My Auctions
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-info-circle fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5 class="alert-heading">Activity Center</h5>
+                                    <p class="mb-0">
+                                        Visit your specific activity pages to view detailed information about your 
+                                        {% if user.is_seller %}listings and watchlist items.{% else %}bids and watchlist items.{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seller Stats Tab (For Seller Accounts) -->
+            {% if user.is_seller %}
+            <div class="tab-pane fade" id="seller-stats" role="tabpanel" aria-labelledby="seller-stats-tab">
+                <div class="profile-form-card">
+                    <div class="card-body p-4">
+                        <div class="section-title-bar">
+                            <h4 class="text-light mb-3">Seller Statistics</h4>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-chart-bar fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5 class="alert-heading">Seller Dashboard</h5>
+                                    <p class="mb-0">
+                                        Visit your <a href="/auctions/my-auctions/" class="alert-link">My Auctions</a> 
+                                        page to view detailed statistics and performance metrics for your listings.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enhance file input display
+    document.addEventListener('DOMContentLoaded', function() {
+        // Profile picture button trigger
+        document.getElementById('profilePictureBtn').addEventListener('click', function() {
+            document.getElementById('{{ form.profile_picture.id_for_label }}').click();
+        });
+        
+        // Update file name display when selected
+        document.getElementById('{{ form.profile_picture.id_for_label }}').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : 'Upload Profile Picture';
+            document.getElementById('file-upload-info').value = fileName;
+        });
+        
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %} 

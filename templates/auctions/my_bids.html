@@ -1,0 +1,484 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Bids - Auctionly{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-lg-8 col-md-9 mx-auto text-center">
+                <div class="page-header mb-4">
+                    <h2 class="fw-bold display-5 text-white mb-3">My Bids</h2>
+                    <p class="text-white fs-5 lead">Track your auction activity and monitor current bid status</p>
+                    <div class="header-line mx-auto my-3"></div>
+                </div>
+            </div>
+        </div>
+        
+        {% if messages %}
+            <div class="row mb-4">
+                <div class="col-lg-8 col-md-10 mx-auto">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show custom-alert" role="alert">
+                            <div class="d-flex">
+                                <div class="alert-icon me-3">
+                                    <i class="fas fa-info-circle fa-lg"></i>
+                                </div>
+                                <div>{{ message }}</div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
+        {% if bids %}
+            <div class="bid-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="text-white mb-0"><i class="fas fa-gavel me-2"></i>Your Bid Activity</h5>
+                    <span class="badge rounded-pill bg-primary px-3 py-2">{{ bids.count }} Bids</span>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table custom-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="ps-4 text-primary fw-bold">Auction</th>
+                                    <th scope="col" class="text-primary fw-bold">Your Bid</th>
+                                    <th scope="col" class="text-primary fw-bold">Current Price</th>
+                                    <th scope="col" class="text-primary fw-bold">Status</th>
+                                    <th scope="col" class="text-primary fw-bold">Ends In</th>
+                                    <th scope="col" class="text-end pe-4 text-primary fw-bold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bid in bids %}
+                                    {% with auction=bid.auction %}
+                                        <tr class="auction-row">
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="auction-image-container me-3">
+                                                        <img src="{{ auction.image.url }}" alt="{{ auction.title }}" class="auction-image">
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="auction-title mb-1 fw-bold">{{ auction.title }}</h6>
+                                                        <span class="badge bg-primary rounded-pill">{{ auction.category.name }}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="bid-amount">
+                                                    <span class="currency">$</span>
+                                                    <span class="amount">{{ bid.amount }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="current-price">
+                                                    <span class="currency">$</span>
+                                                    <span class="amount">{{ auction.current_price }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if auction.is_ended %}
+                                                    {% if auction.highest_bid.bidder == user %}
+                                                        <div class="status-badge won">
+                                                            <i class="fas fa-trophy me-1"></i> Won
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="status-badge lost">
+                                                            <i class="fas fa-times-circle me-1"></i> Outbid
+                                                        </div>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {% if auction.highest_bid.bidder == user %}
+                                                        <div class="status-badge leading">
+                                                            <i class="fas fa-check-circle me-1"></i> Highest Bid
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="status-badge outbid">
+                                                            <i class="fas fa-arrow-circle-up me-1"></i> Outbid
+                                                        </div>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if auction.is_ended %}
+                                                    <div class="ended-badge">
+                                                        <i class="fas fa-clock me-1"></i> Ended
+                                                    </div>
+                                                {% else %}
+                                                    <div class="time-remaining" data-end="{{ auction.end_date|date:'Y-m-d H:i:s' }}">
+                                                        <i class="fas fa-hourglass-half me-1"></i> <span class="countdown-text">{{ auction.time_remaining }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <a href="{{ auction.get_absolute_url }}" class="btn action-button" title="View Auction">
+                                                    <i class="fas fa-eye me-1"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <p class="text-white mb-0"><i class="fas fa-info-circle me-2"></i>Place more bids to increase your chances of winning!</p>
+                        <a href="{% url 'auctions:auction_list' %}" class="btn btn-primary">Browse More Auctions</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-state-container">
+                <div class="empty-state-card">
+                    <div class="icon-container mb-4">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                    <h3 class="mb-3">No Bids Yet</h3>
+                    <p class="mb-4">You haven't placed any bids yet. Start bidding on items that interest you.</p>
+                    <a href="{% url 'auctions:auction_list' %}" class="btn btn-primary btn-lg px-4 py-2">
+                        <i class="fas fa-search me-2"></i>Browse Auctions
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+    /* Page Header Styling */
+    .page-header {
+        position: relative;
+    }
+    
+    .header-line {
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(to right, #4dabf7, #3bc9db);
+        border-radius: 2px;
+    }
+    
+    /* Card Styling */
+    .bid-card {
+        background-color: rgba(33, 37, 41, 0.8);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .card-header {
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .card-footer {
+        background-color: rgba(0, 0, 0, 0.2);
+        padding: 15px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Table Styling */
+    .custom-table {
+        margin-bottom: 0;
+        color: #ffffff;
+    }
+    
+    .custom-table thead {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+    
+    .custom-table thead th {
+        font-size: 0.95rem;
+        padding: 15px;
+        border-bottom: 2px solid rgba(75, 171, 247, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .auction-row {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: #ffffff !important;
+    }
+    
+    .auction-row:hover {
+        background-color: rgba(0, 123, 255, 0.1) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auction-row td {
+        padding: 15px;
+        vertical-align: middle;
+    }
+    
+    .auction-image-container {
+        width: 70px;
+        height: 70px;
+        overflow: hidden;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .auction-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .auction-title {
+        color: #f8f9fa;
+        font-size: 1rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+    
+    /* Bid Amount & Price Styling */
+    .bid-amount, .current-price {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .bid-amount {
+        color: #4dabf7;
+    }
+    
+    .current-price {
+        color: #3bc9db;
+    }
+    
+    .currency {
+        font-size: 0.9rem;
+        margin-right: 2px;
+        opacity: 0.8;
+    }
+    
+    .amount {
+        font-weight: 700;
+    }
+    
+    /* Status Badge Styling */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 14px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .status-badge.won {
+        background-color: rgba(40, 167, 69, 0.2);
+        border: 1px solid rgba(40, 167, 69, 0.4);
+        color: #51cf66;
+    }
+    
+    .status-badge.lost {
+        background-color: rgba(220, 53, 69, 0.2);
+        border: 1px solid rgba(220, 53, 69, 0.4);
+        color: #ff6b6b;
+    }
+    
+    .status-badge.leading {
+        background-color: rgba(40, 167, 69, 0.2);
+        border: 1px solid rgba(40, 167, 69, 0.4);
+        color: #51cf66;
+    }
+    
+    .status-badge.outbid {
+        background-color: rgba(255, 193, 7, 0.2);
+        border: 1px solid rgba(255, 193, 7, 0.4);
+        color: #ffd43b;
+    }
+    
+    /* Time Remaining Styling */
+    .time-remaining, .ended-badge {
+        display: inline-flex;
+        align-items: center;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    
+    .time-remaining {
+        color: #51cf66;
+        background-color: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+    
+    .ended-badge {
+        color: #ff6b6b;
+        background-color: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.2);
+    }
+    
+    /* Action Button Styling */
+    .action-button {
+        background: linear-gradient(to right, #4dabf7, #3bc9db);
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        background: linear-gradient(to right, #3a8cca, #2aa1b3);
+        color: white;
+    }
+    
+    /* Empty State Styling */
+    .empty-state-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 400px;
+    }
+    
+    .empty-state-card {
+        background-color: rgba(33, 37, 41, 0.8);
+        padding: 40px;
+        border-radius: 16px;
+        text-align: center;
+        max-width: 500px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .empty-state-card h3 {
+        color: white;
+        font-weight: 700;
+    }
+    
+    .empty-state-card p {
+        color: #adb5bd;
+        font-size: 1.1rem;
+    }
+    
+    .icon-container {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(to bottom right, #4dabf7, #3bc9db);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        box-shadow: 0 10px 20px rgba(75, 171, 247, 0.3);
+    }
+    
+    .icon-container i {
+        font-size: 32px;
+        color: white;
+    }
+    
+    /* Custom Alert Styling */
+    .custom-alert {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+    
+    .alert-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Text Colors */
+    .text-primary {
+        color: #4dabf7 !important;
+    }
+    
+    .text-info {
+        color: #3bc9db !important;
+    }
+    
+    .text-success {
+        color: #51cf66 !important;
+    }
+    
+    .text-danger {
+        color: #ff6b6b !important;
+    }
+    
+    .text-white {
+        color: #ffffff !important;
+    }
+</style>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update all countdown timers
+        function updateCountdowns() {
+            const timeElements = document.querySelectorAll('.time-remaining[data-end]');
+            
+            timeElements.forEach(el => {
+                const endDate = new Date(el.getAttribute('data-end')).getTime();
+                const now = new Date().getTime();
+                const distance = endDate - now;
+                
+                const countdownText = el.querySelector('.countdown-text');
+                
+                if (distance <= 0) {
+                    // Auction has ended
+                    countdownText.textContent = 'Ended';
+                    el.classList.remove('time-remaining');
+                    el.classList.add('ended-badge');
+                    el.innerHTML = '<i class="fas fa-clock me-1"></i> Ended';
+                    return;
+                }
+                
+                // Calculate time units
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                // Format the countdown text
+                let timeText = '';
+                if (days > 0) {
+                    timeText = `${days}d ${hours}h ${minutes}m`;
+                } else if (hours > 0) {
+                    timeText = `${hours}h ${minutes}m ${seconds}s`;
+                } else {
+                    timeText = `${minutes}m ${seconds}s`;
+                }
+                
+                countdownText.textContent = timeText;
+            });
+        }
+        
+        // Update immediately on page load
+        updateCountdowns();
+        
+        // Update every second
+        setInterval(updateCountdowns, 1000);
+    });
+</script>
+{% endblock %}
+{% endblock %} 
