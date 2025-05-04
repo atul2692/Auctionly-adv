@@ -1,1 +1,1 @@
-web: python manage.py migrate && python manage.py collectstatic --no-input && gunicorn auction_site.wsgi 
+web: gunicorn auction_site.wsgi:application --log-file - 
